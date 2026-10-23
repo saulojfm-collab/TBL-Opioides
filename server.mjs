@@ -21,8 +21,10 @@ function closeExpired(r){if(r.status==='open'&&Date.now()>=r.deadline){r.status=
 function points(record,phase,q){if(!record)return 0;const k=record.choices.indexOf(q.answer);return k<0?0:phase==='individual'?100:phase==='application'?200:[100,50,25,0][k];}
 function score(r,p,publicOnly=false){let total=0;for(let i=0;i<=r.index;i++){if(publicOnly&&!(r.revealed||[]).includes(i))continue;const rd=roundAt(i);if(!rd)continue;const a=r.answers[i]||{};const key=rd.phase==='individual'?p.id:p.team;total+=points(a[key],rd.phase,rd.q);}return total;}
 function teamScore(r,t,publicOnly=false){let total=0;for(let i=10;i<=r.index;i++){if(publicOnly&&!r.revealed.includes(i))continue;const rd=roundAt(i);if(rd)total+=points((r.answers[i]||{})[t],rd.phase,rd.q);}return total;}
+function refreshCaptains(r){for(const team of r.teams){const members=r.players.filter(p=>p.team===team);if(!members.some(p=>p.id===r.captains[team])){if(members.length)r.captains[team]=members[0].id;else delete r.captains[team];}}}
+function createTeams(r,count){if(!Number.isInteger(count)||count<2||count>12)err('Escolha de 2 a 12 equipes.');r.teams=Array.from({length:count},(_,i)=>`Equipe ${i+1}`);r.captains={};for(const p of r.players)p.team=null;}
 function view(r,role,player){
- closeExpired(r);const rd=roundAt(r.index),a=r.answers[r.index]||{},revealed=r.status==='revealed'||r.status==='finished';
+ closeExpired(r);const rd=r.status==='grouping'?null:roundAt(r.index),a=rd?(r.answers[r.index]||{}):{},revealed=r.status==='revealed'||r.status==='finished';
  const current=rd?{phase:rd.phase,number:rd.number,total:rd.total,id:rd.q.id,topic:rd.q.topic,stem:rd.q.stem,options:rd.q.options}:null;
  if(current&&(role==='host'||revealed)){Object.assign(current,{answer:rd.q.answer,explanation:rd.q.explanation,source:sources[rd.q.source],locator:rd.q.locator});}
  const players=r.players.map(p=>({id:p.id,name:p.name,team:p.team,character:p.character,captain:r.captains[p.team]===p.id,score:score(r,p,role!=='host'),individualScore:Object.entries(r.answers).reduce((s,[i,ans])=>Number(i)<10&&(!role||role==='host'||r.revealed.includes(Number(i)))?s+points(ans[p.id],'individual',roundAt(Number(i)).q):s,0),answered:!!a[rd?.phase==='individual'?p.id:p.team],online:Date.now()-p.seen<10000}));
@@ -33,6 +35,7 @@ function view(r,role,player){
  if(mine){response.mine={choices:mine.choices,done:rd.phase!=='team'||mine.choices.includes(rd.q.answer)||mine.choices.length===4};if(rd.phase==='team'||revealed)response.mine.correct=mine.choices.includes(rd.q.answer);if(revealed)response.mine.points=points(mine,rd.phase,rd.q);}
  if(role==='host'||revealed){response.distribution=[0,0,0,0];for(const rec of Object.values(a))response.distribution[rec.choices.at(-1)]++;response.submissions=Object.entries(a).map(([id,v])=>({id,choices:v.choices,correct:v.choices.includes(rd.q.answer),points:points(v,rd.phase,rd.q),reason:v.reason||''}));}
  response.received=Object.keys(a).length;response.expected=rd?.phase==='individual'?r.players.length:r.teams.filter(t=>r.players.some(p=>p.team===t)).length;
+ if(r.status==='finished'){const ranked=[...players].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));response.ranking=ranked.map(p=>({...p,collectiveScore:p.score-p.individualScore,rank:ranked.findIndex(other=>other.score===p.score)+1,champion:p.score===ranked[0]?.score}));}
  return response;
 }
 async function body(req){let s='';for await(const c of req){s+=c;if(s.length>16000)err('Solicitação muito grande.',413);}try{return JSON.parse(s||'{}');}catch{err('Dados inválidos.');}}
@@ -47,7 +50,7 @@ const server=http.createServer(async(req,res)=>{try{
  if(!process.env.HOST_PASSWORD)err('Configure HOST_PASSWORD no servidor para habilitar o professor.',503);
  if(!same(b.password,process.env.HOST_PASSWORD))err('Senha do professor incorreta.',403);
  let code;do{code=String(Math.floor(100000+Math.random()*900000));}while(rooms[code]);
- const teams=Array.from({length:Math.max(2,Math.min(12,Number(b.teams)||4))},(_,i)=>`Equipe ${i+1}`);
+ const teams=[];
  const r={code,title:clean(b.title,80)||'Corrida dos receptores',token:secret(),teams,captains:{},players:[],answers:{},revealed:[],status:'lobby',index:-1,slide:0,duration:Math.max(20,Math.min(600,Number(b.duration)||90)),deadline:0,lockedJoin:false,created:Date.now()};
  rooms[code]=r;save();return json(res,{code,token:r.token});
  }
@@ -56,8 +59,8 @@ const server=http.createServer(async(req,res)=>{try{
  const token=(req.headers.authorization||'').replace(/^Bearer /,'');const host=same(token,r.token);const p=r.players.find(p=>same(token,p.token));
  if(action==='join'&&req.method==='POST'){
  limit('join:'+r.code+req.socket.remoteAddress,150);const b=await body(req);if(r.lockedJoin||r.index>=0)err('A entrada está encerrada. Peça ao professor para reabrir a sala.');if(r.players.length>=200)err('Sala cheia (200 participantes).');
- const name=clean(b.name,24);if(!name)err('Digite um apelido.');if(r.players.some(p=>p.name.toLowerCase()===name.toLowerCase()))err('Esse apelido já está em uso. Escolha outro.');if(!r.teams.includes(b.team))err('Equipe inválida.');
- const player={id:randomBytes(8).toString('hex'),token:secret(),name,team:b.team,character:chars.includes(b.character)?b.character:'Mario',seen:Date.now()};r.players.push(player);if(!r.captains[b.team])r.captains[b.team]=player.id;save();return json(res,{token:player.token,id:player.id});
+ const name=clean(b.name,50);if(!name)err('Digite seu nome.');if(r.players.some(p=>p.name.toLowerCase()===name.toLowerCase()))err('Esse nome já está em uso. Acrescente o sobrenome para diferenciar.');
+ const player={id:randomBytes(8).toString('hex'),token:secret(),name,team:null,character:chars.includes(b.character)?b.character:'Mario',seen:Date.now()};r.players.push(player);save();return json(res,{token:player.token,id:player.id});
  }
  if(action==='info'&&req.method==='GET')return json(res,{code:r.code,title:r.title,teams:r.teams,locked:r.lockedJoin||r.index>=0,characters:chars});
  if(!host&&!p)err('Acesso expirado ou inválido. Entre na sala novamente.',401);if(p)p.seen=Date.now();
@@ -77,16 +80,20 @@ const server=http.createServer(async(req,res)=>{try{
  else if(b.action==='start'&&r.index===-1){if(!r.players.length)err('Aguarde pelo menos um aluno.');r.index=0;r.status='open';r.deadline=Date.now()+r.duration*1000;r.lockedJoin=true;}
  else if(b.action==='lock'&&r.status==='open')r.status='locked';
  else if(b.action==='reveal'&&r.status==='locked'&&r.index>=10){r.status='revealed';r.revealed.push(r.index);if(r.index<20)r.revealed.push(r.index-10);}
- else if(b.action==='next'&&((r.index<10&&r.status==='locked')||(r.index>=10&&r.status==='revealed'))){if(r.index===25){r.status='finished';}else{r.index++;r.status='open';r.deadline=Date.now()+r.duration*1000;}}
+ else if(b.action==='next'&&((r.index<10&&r.status==='locked')||(r.index>=10&&r.status==='revealed'))){if(r.index===9){r.status='grouping';r.deadline=0;}else if(r.index===25){r.status='finished';}else{r.index++;r.status='open';r.deadline=Date.now()+r.duration*1000;}}
+ else if(b.action==='set-teams'&&r.status==='grouping'){createTeams(r,b.count);}
+ else if(b.action==='auto-teams'&&r.status==='grouping'){createTeams(r,b.count);const shuffled=[...r.players];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}shuffled.forEach((p,i)=>p.team=r.teams[i%r.teams.length]);refreshCaptains(r);}
+ else if(b.action==='assign-team'&&r.status==='grouping'){const target=r.players.find(p=>p.id===b.id);if(!target||!(b.team===null||r.teams.includes(b.team)))err('Aluno ou equipe inválidos.');target.team=b.team;refreshCaptains(r);}
+ else if(b.action==='start-team'&&r.status==='grouping'){if(!r.players.length||r.players.some(p=>!r.teams.includes(p.team)))err('Distribua todos os alunos em equipes antes de iniciar o tRAT.');refreshCaptains(r);r.index=10;r.status='open';r.deadline=Date.now()+r.duration*1000;}
  else if(b.action==='extend'&&['open','locked'].includes(r.status)){r.deadline=Math.max(r.deadline,Date.now())+30000;r.status='open';}
- else if(b.action==='captain'){const target=r.players.find(p=>p.id===b.id);if(!target)err('Aluno não encontrado.');r.captains[target.team]=target.id;}
+ else if(b.action==='captain'&&(r.status==='grouping'||r.index>=10)){const target=r.players.find(p=>p.id===b.id);if(!target||!r.teams.includes(target.team))err('Escolha um aluno que já esteja em uma equipe.');r.captains[target.team]=target.id;}
  else if(b.action==='delete'){delete rooms[r.code];save();return json(res,{deleted:true});}
  else err('Esta ação não está disponível agora.');save();return json(res,view(r,'host'));
  }
  if(action==='export'&&req.method==='GET'){
  if(!host)err('Apenas o professor pode exportar.',403);
  const cell=v=>'"'+String(v??'').replace(/^[=+@\-\t\r]/,"'$&").replaceAll('"','""')+'"';
- const rows=[['apelido','personagem','equipe','individual','equipe_tRAT_aplicacao','total'],...r.players.map(p=>[p.name,p.character,p.team,Object.entries(r.answers).reduce((s,[i,a])=>Number(i)<10?s+points(a[p.id],'individual',roundAt(Number(i)).q):s,0),teamScore(r,p.team),score(r,p)])];
+ const rows=[['nome','personagem','equipe','individual','equipe_tRAT_aplicacao','total','posicao_total','campeao'],...r.players.map(p=>{const position=r.players.filter(other=>score(r,other)>score(r,p)).length+1;return [p.name,p.character,p.team||'Sem equipe',Object.entries(r.answers).reduce((s,[i,a])=>Number(i)<10?s+points(a[p.id],'individual',roundAt(Number(i)).q):s,0),teamScore(r,p.team),score(r,p),position,r.status==='finished'&&position===1?'Sim':'Não'];})];
  rows.push([],['rodada','fase','questao','respondente','tentativas','pontos','justificativa']);for(const [i,a] of Object.entries(r.answers)){const rd=roundAt(+i);for(const [key,v]of Object.entries(a))rows.push([+i+1,rd.phase,rd.q.id,r.players.find(p=>p.id===key)?.name||key,v.choices.map(c=>'ABCD'[c]).join(' > '),points(v,rd.phase,rd.q),v.reason]);}
  res.writeHead(200,{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="resultado-${r.code}.csv"`});return res.end('\uFEFF'+rows.map(row=>row.map(cell).join(';')).join('\r\n'));
  }

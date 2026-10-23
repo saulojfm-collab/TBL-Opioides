@@ -27,10 +27,10 @@ export const application=[
 ];
 export const deck=[
  {title:'Corrida dos receptores',text:'Analgésicos opioides · Biomedicina',detail:'Uma missão de Team Based Learning: decida sozinho, argumente com sua equipe e aplique a farmacologia.'},
- {title:'Antes da largada',text:'Prepare-se com os materiais da disciplina',detail:'Objetivos: relacionar receptores e sinalização; interpretar efeitos adversos; integrar farmacocinética, farmacogenética e toxicologia. Sugestão: leitura prévia e equipes de 4 a 6 estudantes.'},
+ {title:'Antes da largada',text:'Prepare-se com os materiais da disciplina',detail:'Objetivos: relacionar receptores e sinalização; interpretar efeitos adversos; integrar farmacocinética, farmacogenética e toxicologia. Sugestão: leitura prévia. Entre com seu nome e faça o iRAT. Depois, o professor formará equipes de 4 a 6 estudantes na mesma sala.'},
  {title:'Primeiro, sua decisão',text:'10 questões individuais · iRAT',detail:'Cada aluno responde no próprio celular. Vale 100 pontos por acerto, sem bônus de velocidade. O gabarito fica reservado até a etapa em equipe para preservar a discussão.'},
  {title:'Agora, defendam uma resposta',text:'As mesmas 10 questões · tRAT',detail:'Discutam e o capitão envia o consenso. Acerto na 1ª tentativa vale 100; na 2ª, 50; na 3ª, 25; na 4ª, 0. O professor revela a justificativa após encerrar a questão.'},
  {title:'O mesmo problema para todos',text:'6 desafios de aplicação · 4S',detail:'Problemas relevantes, iguais para todas as equipes, escolha específica e revelação simultânea. Cada decisão correta vale 200 pontos para a equipe. Defendam a escolha antes do comentário do professor.'},
- {title:'Um erro é um tropeço',text:'A corrida continua',detail:'O personagem tropeça quando o erro é revelado e volta à pista. Ninguém é eliminado e pontos conquistados não são retirados. O prêmio é simbólico. Use apelidos e respeite o ritmo da turma.'}
+ {title:'Um erro é um tropeço',text:'A corrida continua',detail:'O personagem tropeça quando o erro é revelado e volta à pista. Ninguém é eliminado e pontos conquistados não são retirados. O prêmio é simbólico. Use seu nome e respeite o ritmo da turma. O campeão individual é quem soma mais pontos próprios e coletivos; sua equipe aparece no resultado.'}
 ];
 export const roundAt=i=>!Number.isInteger(i)||i<0||i>25?null:i<10?{phase:'individual',q:readiness[i],number:i+1,total:10}:i<20?{phase:'team',q:readiness[i-10],number:i-9,total:10}:{phase:'application',q:application[i-20],number:i-19,total:6};

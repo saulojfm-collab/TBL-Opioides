@@ -9,7 +9,7 @@ Aplicação HTML responsiva com servidor Node.js, preparada para um Web Service 
 3. Defina `HOST_PASSWORD` com uma senha exclusiva do professor. Não coloque essa senha no repositório nem no link dos alunos.
 4. Confira o plano exibido pelo Render e publique. O arquivo usa `plan: free`, sem provisionar banco ou disco pago.
 5. Abra o endereço HTTPS fornecido pelo Render. Escolha **Sou professor**, informe a senha e crie a sala.
-6. Copie o link dos alunos. Nos celulares, eles entram com código, apelido, equipe e personagem. O endereço localhost da prévia não funciona nos celulares pela internet.
+6. Copie o link dos alunos. Nos celulares, eles entram com código, nome e personagem. As equipes só são formadas depois da rodada individual. O endereço localhost da prévia não funciona nos celulares pela internet.
 
 Configuração manual alternativa: Web Service, runtime Node, Build Command `npm run build`, Start Command `npm start`, Health Check `/health`, variável `HOST_PASSWORD`, Node 22 ou superior. O servidor usa `PORT` fornecida pelo Render e escuta em `0.0.0.0`.
 
@@ -19,10 +19,11 @@ Referências de hospedagem: [Web Services](https://render.com/docs/web-services)
 
 ## Roteiro da aula (aproximadamente 70–100 minutos)
 
-- Antes: disponibilize os materiais e peça leitura prévia. Forme equipes de 4–6 estudantes. O professor escolhe de 2 a 12 equipes na criação da sala.
+- Antes: disponibilize os materiais e peça leitura prévia. Planeje equipes de 4–6 estudantes, mas forme os grupos somente depois do iRAT. A criação da sala não exige definir equipes.
 - Apresentação: use os seis quadros de briefing. Todos entram antes da largada. A entrada de novos participantes fica encerrada quando o iRAT começa; participantes já inscritos podem reconectar.
 - iRAT: 10 questões, uma resposta individual por aluno, 100 pontos por acerto. Após encerrar, avance. Não há revelação de gabarito nesta etapa.
-- tRAT: as mesmas 10 questões, discutidas em equipe. O capitão envia o consenso. Vale 100/50/25/0 conforme a tentativa de acerto. O primeiro inscrito em cada equipe é capitão; o professor pode designar outro.
+- Formação das equipes: ao encerrar a décima questão individual, clique em **Formar equipes**. Escolha de 2 a 12 equipes e use **Sortear equipes equilibradas**, ou **Criar equipes vazias** e atribua cada aluno na tabela. O primeiro integrante vira capitão por padrão e pode ser substituído. Todos os alunos precisam de equipe antes de clicar em **Iniciar tRAT**. Eles continuam no mesmo celular e na mesma sala, sem novo cadastro. As respostas individuais permanecem vinculadas ao identificador original e ao nome do aluno.
+- tRAT: as mesmas 10 questões, discutidas em equipe. O capitão envia o consenso. Vale 100/50/25/0 conforme a tentativa de acerto. O professor pode designar outro capitão na lista de participantes.
 - Aplicação: seis problemas comuns a todas as equipes. O capitão pode registrar um argumento antes de confirmar a alternativa. Uma resposta por equipe, valendo 200 pontos. Encerre, peça defesa oral e revele simultaneamente.
 - Apelação: antes de avançar, conduza discussão com justificativa e consulta às fontes. O aplicativo não altera notas por apelação nem oferece edição manual de pontuação.
 - Fechamento: discuta os mecanismos que geraram mais erros e exporte o CSV.
@@ -35,13 +36,15 @@ Cada aluno escolhe Mario, Luigi, Peach, Toad, Yoshi ou Bowser, em representaçõ
 
 Máximo individual: 3.200 = 1.000 de iRAT + 1.000 de tRAT + 1.200 de aplicação. Todos os integrantes recebem os mesmos pontos coletivos da sua equipe, sem substituir seus resultados individuais. O ranking de equipes conta apenas os 2.200 pontos coletivos para não favorecer equipes maiores. Empates compartilham a colocação, sem desempate por velocidade.
 
+No encerramento, o destaque **Aluno campeão da corrida** mostra o nome, o personagem, a equipe, os pontos individuais, os coletivos e o total. A maior soma individual + coletiva define o campeão. Em caso de empate na maior soma, todos recebem o título. O ranking detalhado e o CSV incluem posição e identificação de campeão.
+
 O professor vê pontuação e distribuição atualizadas durante as respostas. Os alunos veem apenas pontos já revelados. Na tela de projeção, a corrida usa os pontos revelados e o gabarito reservado fica oculto. Os controles completos ficam no painel lateral fora da projeção; use **Sair da projeção** para voltar. Durante o iRAT, mantenha o painel do professor fora da vista dos alunos. Um único monitor não permite, ao mesmo tempo, exibir controles privados e uma tela pública separada.
 
 ## Retomar e exportar
 
 O acesso da sala fica salvo neste navegador. Professor e aluno devem usar o mesmo dispositivo e navegador para retomar. Não apague os dados do navegador durante a aula. Em um computador compartilhado, use perfis separados; o aplicativo guarda apenas uma participação por perfil. Para dois alunos no mesmo aparelho, use perfis diferentes. O servidor aceita até 200 inscritos por sala, mas a capacidade real simultânea do serviço precisa ser validada no plano escolhido.
 
-O CSV contém totais, equipe, personagem, alternativas tentadas e justificativas. O professor pode apagar a sala ao terminar. Não há recuperação administrativa de tokens, autenticação institucional, lista de presença oficial ou integração com prontuário. Use apelidos e compartilhe o código apenas com a turma.
+O CSV contém nome, totais, equipe, personagem, posição, indicação de campeão, alternativas tentadas e justificativas. O professor pode apagar a sala ao terminar. Não há recuperação administrativa de tokens, autenticação institucional, lista de presença oficial ou integração com prontuário. Os nomes e a pontuação aparecem no placar da turma; compartilhe o código apenas com os participantes.
 
 ## Materiais utilizados
 
@@ -68,6 +71,6 @@ Abra `http://localhost:3000`. Para verificar servidor e banco de questões: `npm
 
 ## Verificação e limites
 
-Testes automatizados cobrem 26 rodadas com três alunos em duas equipes, restrições de acesso, ocultação do gabarito, tentativas repetidas, resposta depois do encerramento, pontuação, exportação e retomada após reinício. Não constituem teste de carga nem validação em uma turma real. A prévia visual no navegador integrado não conseguiu se conectar ao servidor local deste ambiente; confira a interface em computador e celular após a publicação e faça uma sala de ensaio antes da aula.
+Testes automatizados cobrem 26 rodadas com três alunos, inicialmente sem equipe, formação manual e por sorteio após o iRAT, restrições de acesso, preservação das notas individuais, bloqueio de mudança de equipe após início do tRAT, ocultação do gabarito, tentativas repetidas, pontuação, campeão por nome e equipe, exportação e retomada após reinício. Não constituem teste de carga nem validação em uma turma real. A prévia visual no navegador integrado não conseguiu se conectar ao servidor local deste ambiente; confira a interface em computador e celular após a publicação e faça uma sala de ensaio antes da aula.
 
 Projeto didático independente. Mario Bros. e os nomes de personagens pertencem à Nintendo. O aplicativo não usa imagens ou trilhas oficiais. O prêmio é simbólico.

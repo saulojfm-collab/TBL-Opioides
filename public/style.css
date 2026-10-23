@@ -3,3 +3,5 @@
 #exit-project{display:none}body.projector #exit-project{display:block}body.projector .reserved{display:none}
 
 .option:disabled{opacity:1;cursor:default}.option:disabled:hover{transform:none}
+
+.champion{border:2px solid #d9ae1f;background:#fffcf0}.champion-grid{display:flex;gap:20px;flex-wrap:wrap}.champion-person{flex:1;min-width:180px;padding:20px;text-align:center;background:#fff4bd;border-radius:12px}.champion-person .sprite{margin:12px auto 24px;transform:scale(1.5)}.champion-person strong{font-size:26px}.champion-person p{margin:8px 0}
