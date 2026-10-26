@@ -15,7 +15,7 @@ test('TBL completo, isolamento de acesso, pontuação e retomada',async()=>{
  try{
  await launch();assert.equal((await req('/health')).ok,true);
  await req('/api/create',{password:'wrong'},null,403);
- const host=await req('/api/create',{password:'test-password',teams:2,duration:20});const base='/api/room/'+host.code;const ctl=(action,extra={})=>req(base+'/control',{action,...extra},host.token);
+ const host=await req('/api/create',{password:'test-password',teams:2,duration:180});const base='/api/room/'+host.code;const ctl=(action,extra={})=>req(base+'/control',{action,...extra},host.token);
  const lobby=await req(base+'/state',null,host.token);assert.equal(lobby.status,'lobby');assert.equal(lobby.current,null);assert.equal(lobby.players.length,0);
  assert.deepEqual(lobby.teams,[]);
  const a=await req(base+'/join',{name:'Alice',character:'Mario'}),b=await req(base+'/join',{name:'Bia',character:'Peach'}),c=await req(base+'/join',{name:'Caio',character:'Luigi'});
@@ -26,7 +26,7 @@ test('TBL completo, isolamento de acesso, pontuação e retomada',async()=>{
  await ctl('start');await req(base+'/join',{name:'Late',team:'Equipe 1'},null,400);
  for(let i=0;i<26;i++){
  const rd=roundAt(i);let before=await req(base+'/state',null,a.token);assert.equal(before.index,i);assert.equal(before.current.answer,undefined);assert.equal(before.current.explanation,undefined);assert.equal(before.current.rationales,undefined);assert.equal(before.current.options.length,5);assert(before.current.context);assert(before.current.command);assert.equal(before.submissions,undefined);assert(!JSON.stringify(before).includes(host.token));
- if(i<10){for(const p of [a,b,c])await req(base+'/answer',{index:i,choice:rd.q.answer},p.token);await req(base+'/answer',{index:i,choice:rd.q.answer},a.token,400);}
+ if(i<10){for(const p of [a,b,c])await req(base+'/answer',{index:i,choice:rd.q.answer,speedBonus:99999,elapsedMs:0},p.token);await req(base+'/answer',{index:i,choice:rd.q.answer},a.token,400);}
  else{
  await req(base+'/answer',{index:i,choice:rd.q.answer},b.token,403);
  if(i===10){const wrong=(rd.q.answer+1)%5;await req(base+'/answer',{index:i,choice:wrong},a.token);await req(base+'/answer',{index:i,choice:wrong},a.token,400);}
@@ -36,11 +36,11 @@ test('TBL completo, isolamento de acesso, pontuação e retomada',async()=>{
  await req(base+'/answer',{index:i,choice:5},a.token,400);const teacher=await req(base+'/state',null,host.token);assert.equal(teacher.received,i<10?3:2);assert.equal(teacher.current.answer,rd.q.answer);
  if(i===2){await stop();await launch();const restored=await req(base+'/state',null,a.token);assert.equal(restored.index,2);assert.equal(restored.mine.done,true);}
  await ctl('lock');await req(base+'/answer',{index:i,choice:0},a.token,400);
- if(i===0){await req(base+'/control',{action:'reveal'},host.token,400);assert.equal((await req(base+'/state',null,a.token)).players[0].score,0);await ctl('extend');await ctl('lock');}
+ if(i===0){await req(base+'/control',{action:'reveal'},host.token,400);assert.equal((await req(base+'/state',null,a.token)).players[0].score,0);const pre=await req(base+'/state',null,host.token);await ctl('extend');const post=await req(base+'/state',null,host.token);assert.equal(post.startedAt,pre.startedAt);assert.equal(post.players[0].score,120);assert.equal(post.players[0].speedBonus,20);assert.equal((await req(base+'/state',null,a.token)).mine.speedBonus,undefined);await ctl('lock');}
  if(i>=10){await ctl('reveal');const reveal=await req(base+'/state',null,a.token);assert.equal(reveal.current.answer,rd.q.answer);assert.equal(reveal.mine.correct,true);}
  await ctl('next');
  if(i===9){
-   const grouping=await req(base+'/state',null,host.token);assert.equal(grouping.status,'grouping');assert.equal(grouping.current,null);assert.equal(grouping.players[0].score,1000);assert.equal(grouping.players[0].team,null);
+   const grouping=await req(base+'/state',null,host.token);assert.equal(grouping.status,'grouping');assert.equal(grouping.current,null);assert.equal(grouping.players[0].score,1200);assert.equal(grouping.players[0].team,null);
    assert.equal((await req(base+'/state',null,a.token)).me.team,null);
    await req(base+'/answer',{index:9,choice:0},a.token,400);
    await req(base+'/control',{action:'start-team'},host.token,400);
@@ -57,13 +57,13 @@ test('TBL completo, isolamento de acesso, pontuação e retomada',async()=>{
    await ctl('start-team');await req(base+'/control',{action:'assign-team',id:b.id,team:'Equipe 2'},host.token,400);
  }
  }
- const final=await req(base+'/state',null,host.token);assert.equal(final.status,'finished');assert.equal(final.players.find(p=>p.id===a.id).score,3150);assert.equal(final.players.find(p=>p.id===b.id).score,3150);assert.equal(final.players.find(p=>p.id===c.id).score,3200);assert.equal(final.teams[0].score,2150);assert.equal(final.teams[1].score,2200);
+ const final=await req(base+'/state',null,host.token);assert.equal(final.status,'finished');assert.equal(final.players.find(p=>p.id===a.id).score,3770);assert.equal(final.players.find(p=>p.id===b.id).score,3770);assert.equal(final.players.find(p=>p.id===c.id).score,3840);assert.equal(final.teams[0].score,2570);assert.equal(final.teams[1].score,2640);assert.equal(final.maxScore,3840);assert.equal(final.ranking[0].speedBonus,640);assert.equal(final.ranking[0].baseScore,3200);
  const csv=await req(base+'/export',null,host.token);assert(csv.includes('Alice'));assert(csv.includes('3150'));assert(csv.includes('Mecanismo discutido'));
- assert.equal(final.ranking[0].name,'Caio');assert.equal(final.ranking[0].team,'Equipe 2');assert.equal(final.ranking[0].individualScore,1000);assert.equal(final.ranking[0].collectiveScore,2200);assert.equal(final.ranking[0].champion,true);assert.equal(final.ranking[1].rank,2);assert.equal(final.ranking[2].rank,2);assert.equal(final.ranking.filter(p=>p.champion).length,1);
- const studentFinal=await req(base+'/state',null,a.token);assert.deepEqual(studentFinal.ranking,final.ranking);assert(csv.includes('"posicao_total";"campeao"'));assert(csv.includes('"Caio";"Luigi";"Equipe 2";"1000";"2200";"3200";"1";"Sim"'));
+ assert.equal(final.ranking[0].name,'Caio');assert.equal(final.ranking[0].team,'Equipe 2');assert.equal(final.ranking[0].individualScore,1200);assert.equal(final.ranking[0].collectiveScore,2640);assert.equal(final.ranking[0].champion,true);assert.equal(final.ranking[1].rank,2);assert.equal(final.ranking[2].rank,2);assert.equal(final.ranking.filter(p=>p.champion).length,1);
+ const studentFinal=await req(base+'/state',null,a.token);assert.deepEqual(studentFinal.ranking,final.ranking);assert(csv.includes('"posicao_total";"campeao"'));assert(csv.includes('"Caio";"Luigi";"Equipe 2";"1200";"2640";"3840";"1";"Sim"'));
  // Retoma uma sala encerrada com um empate na liderança para conferir título compartilhado.
  await stop();const fixtureFile=join(dir,'rooms.json');const fixture=JSON.parse(readFileSync(fixtureFile,'utf8'));fixture[host.code].answers[0][c.id].choices=[(readiness[0].answer+1)%5];writeFileSync(fixtureFile,JSON.stringify(fixture));await launch();
- const tied=await req(base+'/state',null,host.token);assert.deepEqual(tied.ranking.filter(p=>p.champion).map(p=>p.name),['Alice','Bia']);assert.equal(tied.ranking[0].score,3150);assert.equal(tied.ranking[2].rank,3);assert.equal(tied.ranking[2].name,'Caio');
+ const tied=await req(base+'/state',null,host.token);assert.deepEqual(tied.ranking.filter(p=>p.champion).map(p=>p.name),['Alice','Bia']);assert.equal(tied.ranking[0].score,3770);assert.equal(tied.ranking[2].rank,3);assert.equal(tied.ranking[2].name,'Caio');
  const five=await req('/api/create',{password:'test-password',duration:20});const fivePath='/api/room/'+five.code;const fiveCtl=(action,extra={})=>req(fivePath+'/control',{action,...extra},five.token);const fiveStudent=await req(fivePath+'/join',{name:'Cinco alternativas',character:'Mario'});
  await fiveCtl('start');for(let i=0;i<10;i++){await fiveCtl('lock');await fiveCtl('next');}await fiveCtl('set-teams',{count:2});await fiveCtl('assign-team',{id:fiveStudent.id,team:'Equipe 1'});await fiveCtl('start-team');
  const wrongChoices=[0,1,2,3,4].filter(choice=>choice!==readiness[0].answer);for(let i=0;i<4;i++){const attempt=await req(fivePath+'/answer',{index:10,choice:wrongChoices[i]},fiveStudent.token);assert.equal(attempt.state.mine.done,false);}

@@ -493,17 +493,17 @@ export const deck=[
   {
     "title": "Primeiro, sua decisão",
     "text": "10 questões individuais · iRAT",
-    "detail": "Cada aluno responde no próprio celular. Vale 100 pontos por acerto, sem bônus de velocidade. O gabarito fica reservado até a etapa em equipe para preservar a discussão."
+    "detail": "Cada aluno responde no próprio celular. Vale 100 pontos por acerto e até 20 de bônus por rapidez na primeira tentativa. O gabarito fica reservado até a etapa em equipe para preservar a discussão."
   },
   {
     "title": "Agora, defendam uma resposta",
     "text": "As mesmas 10 questões · tRAT",
-    "detail": "Discutam e o capitão envia o consenso. Acerto na 1ª tentativa vale 100; na 2ª, 50; na 3ª, 25; na 4ª e na 5ª, 0. O professor revela a justificativa após encerrar a questão."
+    "detail": "Discutam e o capitão envia o consenso. Acerto na 1ª tentativa vale 100; na 2ª, 50; na 3ª, 25; na 4ª e na 5ª, 0. Acertos na primeira tentativa podem receber até 20 pontos extras por rapidez. O professor revela a justificativa após encerrar a questão."
   },
   {
     "title": "O mesmo problema para todos",
     "text": "6 desafios de aplicação · 4S",
-    "detail": "Problemas relevantes, iguais para todas as equipes, escolha específica e revelação simultânea. Cada decisão correta vale 200 pontos para a equipe. Defendam a escolha antes do comentário do professor."
+    "detail": "Problemas relevantes, iguais para todas as equipes, escolha específica e revelação simultânea. Cada decisão correta vale 200 pontos para a equipe, com até 40 de bônus por rapidez. Defendam a escolha antes do comentário do professor."
   },
   {
     "title": "Um erro é um tropeço",

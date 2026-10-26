@@ -4,6 +4,7 @@ import {join,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomBytes,timingSafeEqual} from 'node:crypto';
 import {roundAt,deck,sources,bankVersion} from './questions.mjs';
+import {result,speedBonus,scoringVersion,maxScore} from './scoring.mjs';
 const here=dirname(fileURLToPath(import.meta.url));
 const dataDir=process.env.DATA_DIR||join(here,'data'); mkdirSync(dataDir,{recursive:true});
 const file=join(dataDir,'rooms.json');
@@ -18,8 +19,10 @@ const rates=new Map();
 function limit(key,max){const now=Date.now(),r=rates.get(key); if(!r||now-r.time>60000){rates.set(key,{time:now,n:1});return;}if(++r.n>max)err('Muitas tentativas. Aguarde um minuto.',429);}
 setInterval(()=>{const now=Date.now();for(const [k,r] of rates)if(now-r.time>60000)rates.delete(k);},60000).unref();
 function closeExpired(r){if(r.status==='open'&&Date.now()>=r.deadline){r.status='locked';save();}}
-function points(record,phase,q){if(!record)return 0;const k=record.choices.indexOf(q.answer);return k<0?0:phase==='individual'?100:phase==='application'?200:[100,50,25,0,0][k];}
-function score(r,p,publicOnly=false){let total=0;for(let i=0;i<=r.index;i++){if(publicOnly&&!(r.revealed||[]).includes(i))continue;const rd=roundAt(i);if(!rd)continue;const a=r.answers[i]||{};const key=rd.phase==='individual'?p.id:p.team;total+=points(a[key],rd.phase,rd.q);}return total;}
+function points(record,phase,q){return result(record,phase,q).points;}
+function tally(r,p,publicOnly=false){const totals={score:0,baseScore:0,speedBonus:0,individualScore:0,individualBaseScore:0,individualSpeedBonus:0};for(let i=0;i<=r.index;i++){if(publicOnly&&!(r.revealed||[]).includes(i))continue;const rd=roundAt(i);if(!rd)continue;const rec=(r.answers[i]||{})[rd.phase==='individual'?p.id:p.team];const value=result(rec,rd.phase,rd.q);totals.score+=value.points;totals.baseScore+=value.basePoints;totals.speedBonus+=value.speedBonus;if(rd.phase==='individual'){totals.individualScore+=value.points;totals.individualBaseScore+=value.basePoints;totals.individualSpeedBonus+=value.speedBonus;}}return totals;}
+function score(r,p,publicOnly=false){return tally(r,p,publicOnly).score;}
+function openRound(r,index){r.index=index;r.status='open';r.startedAt=Date.now();r.deadline=r.startedAt+r.duration*1000;}
 function teamScore(r,t,publicOnly=false){let total=0;for(let i=10;i<=r.index;i++){if(publicOnly&&!r.revealed.includes(i))continue;const rd=roundAt(i);if(rd)total+=points((r.answers[i]||{})[t],rd.phase,rd.q);}return total;}
 function refreshCaptains(r){for(const team of r.teams){const members=r.players.filter(p=>p.team===team);if(!members.some(p=>p.id===r.captains[team])){if(members.length)r.captains[team]=members[0].id;else delete r.captains[team];}}}
 function createTeams(r,count){if(!Number.isInteger(count)||count<2||count>12)err('Escolha de 2 a 12 equipes.');r.teams=Array.from({length:count},(_,i)=>`Equipe ${i+1}`);r.captains={};for(const p of r.players)p.team=null;}
@@ -27,13 +30,13 @@ function view(r,role,player){
  closeExpired(r);const rd=r.status==='grouping'?null:roundAt(r.index),a=rd?(r.answers[r.index]||{}):{},revealed=r.status==='revealed'||r.status==='finished';
  const current=rd?{phase:rd.phase,number:rd.number,total:rd.total,id:rd.q.id,topic:rd.q.topic,stem:rd.q.stem,context:rd.q.context,command:rd.q.command,contextCredit:rd.q.contextCredit,options:rd.q.options}:null;
  if(current&&(role==='host'||revealed)){Object.assign(current,{answer:rd.q.answer,explanation:rd.q.explanation,source:sources[rd.q.source],locator:rd.q.locator,rationales:rd.q.rationales,objective:rd.q.objective,cognitive:rd.q.cognitive});}
- const players=r.players.map(p=>({id:p.id,name:p.name,team:p.team,character:p.character,captain:r.captains[p.team]===p.id,score:score(r,p,role!=='host'),individualScore:Object.entries(r.answers).reduce((s,[i,ans])=>Number(i)<10&&(!role||role==='host'||r.revealed.includes(Number(i)))?s+points(ans[p.id],'individual',roundAt(Number(i)).q):s,0),answered:!!a[rd?.phase==='individual'?p.id:p.team],online:Date.now()-p.seen<10000}));
- for(const p of players)p.publicScore=score(r,r.players.find(x=>x.id===p.id),true);
+ const players=r.players.map(p=>({id:p.id,name:p.name,team:p.team,character:p.character,captain:r.captains[p.team]===p.id,...tally(r,p,role!=='host'),answered:!!a[rd?.phase==='individual'?p.id:p.team],online:Date.now()-p.seen<10000}));
+ for(const p of players){const publicResult=tally(r,r.players.find(x=>x.id===p.id),true);p.publicScore=publicResult.score;p.publicSpeedBonus=publicResult.speedBonus;}
  const teams=r.teams.map(name=>({name,score:teamScore(r,name,role!=='host'),members:players.filter(p=>p.team===name).length,captain:r.captains[name]}));
  const key=player&&(rd?.phase==='individual'?player.id:player.team),mine=key?a[key]:null;
- const response={bankVersion,code:r.code,title:r.title,status:r.status,index:r.index,slide:r.slide,deck,teams,players,current,deadline:r.deadline,serverTime:Date.now(),duration:r.duration,lockedJoin:r.lockedJoin,revealed:r.revealed,me:player?{id:player.id,name:player.name,team:player.team,captain:r.captains[player.team]===player.id}:null};
- if(mine){response.mine={choices:mine.choices,done:rd.phase!=='team'||mine.choices.includes(rd.q.answer)||mine.choices.length>=rd.q.options.length};if(rd.phase==='team'||revealed)response.mine.correct=mine.choices.includes(rd.q.answer);if(revealed)response.mine.points=points(mine,rd.phase,rd.q);}
- if(role==='host'||revealed){response.distribution=Array(rd?.q?.options.length||0).fill(0);for(const rec of Object.values(a))response.distribution[rec.choices.at(-1)]++;response.submissions=Object.entries(a).map(([id,v])=>({id,choices:v.choices,correct:v.choices.includes(rd.q.answer),points:points(v,rd.phase,rd.q),reason:v.reason||''}));}
+ const response={bankVersion,scoringVersion:r.scoringVersion||'base-v1',maxScore:r.scoringVersion===scoringVersion?maxScore:3200,startedAt:r.startedAt||0,code:r.code,title:r.title,status:r.status,index:r.index,slide:r.slide,deck,teams,players,current,deadline:r.deadline,serverTime:Date.now(),duration:r.duration,lockedJoin:r.lockedJoin,revealed:r.revealed,me:player?{id:player.id,name:player.name,team:player.team,captain:r.captains[player.team]===player.id}:null};
+ if(mine){response.mine={choices:mine.choices,done:rd.phase!=='team'||mine.choices.includes(rd.q.answer)||mine.choices.length>=rd.q.options.length};if(rd.phase==='team'||revealed)response.mine.correct=mine.choices.includes(rd.q.answer);if(revealed)Object.assign(response.mine,result(mine,rd.phase,rd.q),{elapsedMs:mine.elapsedMs??null});}
+ if(role==='host'||revealed){response.distribution=Array(rd?.q?.options.length||0).fill(0);for(const rec of Object.values(a))response.distribution[rec.choices.at(-1)]++;response.submissions=Object.entries(a).map(([id,v])=>({id,choices:v.choices,correct:v.choices.includes(rd.q.answer),...result(v,rd.phase,rd.q),elapsedMs:v.elapsedMs??null,reason:v.reason||''}));}
  response.received=Object.keys(a).length;response.expected=rd?.phase==='individual'?r.players.length:r.teams.filter(t=>r.players.some(p=>p.team===t)).length;
  if(r.status==='finished'){const ranked=[...players].sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name));response.ranking=ranked.map(p=>({...p,collectiveScore:p.score-p.individualScore,rank:ranked.findIndex(other=>other.score===p.score)+1,champion:p.score===ranked[0]?.score}));}
  return response;
@@ -44,14 +47,14 @@ const server=http.createServer(async(req,res)=>{try{
  res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('X-Frame-Options','DENY');
  res.setHeader('Content-Security-Policy',"default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'");
  const url=new URL(req.url,'http://localhost');const path=url.pathname;
- if(path==='/health')return json(res,{ok:true,bankVersion});
+ if(path==='/health')return json(res,{ok:true,bankVersion,scoringVersion});
  if(path==='/api/create'&&req.method==='POST'){
  limit('create:'+(req.socket.remoteAddress||''),20);const b=await body(req);
  if(!process.env.HOST_PASSWORD)err('Configure HOST_PASSWORD no servidor para habilitar o professor.',503);
  if(!same(b.password,process.env.HOST_PASSWORD))err('Senha do professor incorreta.',403);
  let code;do{code=String(Math.floor(100000+Math.random()*900000));}while(rooms[code]);
  const teams=[];
- const r={code,title:clean(b.title,80)||'Corrida dos receptores',token:secret(),teams,captains:{},players:[],answers:{},revealed:[],status:'lobby',index:-1,slide:0,duration:Math.max(20,Math.min(600,Number(b.duration)||90)),deadline:0,lockedJoin:false,created:Date.now()};
+ const r={code,scoringVersion,title:clean(b.title,80)||'Corrida dos receptores',token:secret(),teams,captains:{},players:[],answers:{},revealed:[],status:'lobby',index:-1,slide:0,duration:Math.max(20,Math.min(600,Number(b.duration)||90)),deadline:0,startedAt:0,lockedJoin:false,created:Date.now()};
  rooms[code]=r;save();return json(res,{code,token:r.token});
  }
  if(path.startsWith('/api/room/')){
@@ -67,24 +70,24 @@ const server=http.createServer(async(req,res)=>{try{
  if(action==='state'&&req.method==='GET')return json(res,view(r,host?'host':'student',p));
  if(action==='answer'&&req.method==='POST'){
  if(!p)err('Somente alunos podem responder.',403);const b=await body(req),rd=roundAt(r.index);
- if(r.status!=='open'||!rd||Date.now()>=r.deadline)err('O tempo desta questão terminou.');if(b.index!==r.index)err('Esta resposta pertence a outra questão.');
+ const receivedAt=Date.now();if(r.status!=='open'||!rd||receivedAt>=r.deadline)err('O tempo desta questão terminou.');if(b.index!==r.index)err('Esta resposta pertence a outra questão.');
  if(!Number.isInteger(b.choice)||b.choice<0||b.choice>=rd.q.options.length)err('Alternativa inválida.');
  if(rd.phase!=='individual'&&r.captains[p.team]!==p.id)err('Somente o capitão envia o consenso da equipe.',403);
  const key=rd.phase==='individual'?p.id:p.team,a=r.answers[r.index]??={},rec=a[key]??={choices:[]};
  if(rec.choices.length&&(rd.phase!=='team'||rec.choices.includes(rd.q.answer)||rec.choices.length>=rd.q.options.length))err('Resposta já registrada.');
- if(rec.choices.includes(b.choice))err('Esta alternativa já foi tentada.');rec.choices.push(b.choice);rec.reason=clean(b.reason,500);rec.at=Date.now();save();return json(res,{ok:true,state:view(r,'student',p)});
+ if(rec.choices.includes(b.choice))err('Esta alternativa já foi tentada.');const attemptIndex=rec.choices.length;const elapsedMs=Number.isFinite(r.startedAt)&&r.startedAt>0?Math.max(0,receivedAt-r.startedAt):null;rec.choices.push(b.choice);rec.attempts??=[];rec.attempts.push({choice:b.choice,receivedAt,elapsedMs});rec.elapsedMs=elapsedMs;rec.speedBonus=b.choice===rd.q.answer&&r.scoringVersion===scoringVersion?speedBonus(rd.phase,attemptIndex,elapsedMs,r.duration*1000):0;rec.reason=clean(b.reason,500);rec.at=receivedAt;save();return json(res,{ok:true,state:view(r,'student',p)});
  }
  if(action==='control'&&req.method==='POST'){
  if(!host)err('Apenas o professor pode controlar a sala.',403);const b=await body(req);
  if(b.action==='slide'&&r.status==='lobby')r.slide=Math.max(0,Math.min(deck.length-1,Number(b.slide)||0));
- else if(b.action==='start'&&r.index===-1){if(!r.players.length)err('Aguarde pelo menos um aluno.');r.index=0;r.status='open';r.deadline=Date.now()+r.duration*1000;r.lockedJoin=true;}
+ else if(b.action==='start'&&r.index===-1){if(!r.players.length)err('Aguarde pelo menos um aluno.');openRound(r,0);r.lockedJoin=true;}
  else if(b.action==='lock'&&r.status==='open')r.status='locked';
  else if(b.action==='reveal'&&r.status==='locked'&&r.index>=10){r.status='revealed';r.revealed.push(r.index);if(r.index<20)r.revealed.push(r.index-10);}
- else if(b.action==='next'&&((r.index<10&&r.status==='locked')||(r.index>=10&&r.status==='revealed'))){if(r.index===9){r.status='grouping';r.deadline=0;}else if(r.index===25){r.status='finished';}else{r.index++;r.status='open';r.deadline=Date.now()+r.duration*1000;}}
+ else if(b.action==='next'&&((r.index<10&&r.status==='locked')||(r.index>=10&&r.status==='revealed'))){if(r.index===9){r.status='grouping';r.deadline=0;}else if(r.index===25){r.status='finished';}else{openRound(r,r.index+1);}}
  else if(b.action==='set-teams'&&r.status==='grouping'){createTeams(r,b.count);}
  else if(b.action==='auto-teams'&&r.status==='grouping'){createTeams(r,b.count);const shuffled=[...r.players];for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}shuffled.forEach((p,i)=>p.team=r.teams[i%r.teams.length]);refreshCaptains(r);}
  else if(b.action==='assign-team'&&r.status==='grouping'){const target=r.players.find(p=>p.id===b.id);if(!target||!(b.team===null||r.teams.includes(b.team)))err('Aluno ou equipe inválidos.');target.team=b.team;refreshCaptains(r);}
- else if(b.action==='start-team'&&r.status==='grouping'){if(!r.players.length||r.players.some(p=>!r.teams.includes(p.team)))err('Distribua todos os alunos em equipes antes de iniciar o tRAT.');refreshCaptains(r);r.index=10;r.status='open';r.deadline=Date.now()+r.duration*1000;}
+ else if(b.action==='start-team'&&r.status==='grouping'){if(!r.players.length||r.players.some(p=>!r.teams.includes(p.team)))err('Distribua todos os alunos em equipes antes de iniciar o tRAT.');refreshCaptains(r);openRound(r,10);}
  else if(b.action==='extend'&&['open','locked'].includes(r.status)){r.deadline=Math.max(r.deadline,Date.now())+30000;r.status='open';}
  else if(b.action==='captain'&&(r.status==='grouping'||r.index>=10)){const target=r.players.find(p=>p.id===b.id);if(!target||!r.teams.includes(target.team))err('Escolha um aluno que já esteja em uma equipe.');r.captains[target.team]=target.id;}
  else if(b.action==='delete'){delete rooms[r.code];save();return json(res,{deleted:true});}
@@ -93,8 +96,8 @@ const server=http.createServer(async(req,res)=>{try{
  if(action==='export'&&req.method==='GET'){
  if(!host)err('Apenas o professor pode exportar.',403);
  const cell=v=>'"'+String(v??'').replace(/^[=+@\-\t\r]/,"'$&").replaceAll('"','""')+'"';
- const rows=[['nome','personagem','equipe','individual','equipe_tRAT_aplicacao','total','posicao_total','campeao'],...r.players.map(p=>{const position=r.players.filter(other=>score(r,other)>score(r,p)).length+1;return [p.name,p.character,p.team||'Sem equipe',Object.entries(r.answers).reduce((s,[i,a])=>Number(i)<10?s+points(a[p.id],'individual',roundAt(Number(i)).q):s,0),teamScore(r,p.team),score(r,p),position,r.status==='finished'&&position===1?'Sim':'Não'];})];
- rows.push([],['rodada','fase','questao','respondente','tentativas','pontos','justificativa']);for(const [i,a] of Object.entries(r.answers)){const rd=roundAt(+i);for(const [key,v]of Object.entries(a))rows.push([+i+1,rd.phase,rd.q.id,r.players.find(p=>p.id===key)?.name||key,v.choices.map(c=>String.fromCharCode(65+c)).join(' > '),points(v,rd.phase,rd.q),v.reason]);}
+ const rows=[['nome','personagem','equipe','individual','equipe_tRAT_aplicacao','total','posicao_total','campeao','pontos_acertos','bonus_rapidez','bonus_individual','bonus_coletivo'],...r.players.map(p=>{const totals=tally(r,p);const position=r.players.filter(other=>score(r,other)>totals.score).length+1;return [p.name,p.character,p.team||'Sem equipe',totals.individualScore,teamScore(r,p.team),totals.score,position,r.status==='finished'&&position===1?'Sim':'Não',totals.baseScore,totals.speedBonus,totals.individualSpeedBonus,totals.speedBonus-totals.individualSpeedBonus];})];
+ rows.push([],['rodada','fase','questao','respondente','tentativas','total','pontos_acerto','bonus_rapidez','tempo_resposta_s','justificativa']);for(const [i,a] of Object.entries(r.answers)){const rd=roundAt(+i);for(const [key,v]of Object.entries(a)){const value=result(v,rd.phase,rd.q);rows.push([+i+1,rd.phase,rd.q.id,r.players.find(p=>p.id===key)?.name||key,v.choices.map(c=>String.fromCharCode(65+c)).join(' > '),value.points,value.basePoints,value.speedBonus,v.elapsedMs==null?'':(v.elapsedMs/1000).toFixed(3),v.reason]);}}
  res.writeHead(200,{'Content-Type':'text/csv; charset=utf-8','Content-Disposition':`attachment; filename="resultado-${r.code}.csv"`});return res.end('\uFEFF'+rows.map(row=>row.map(cell).join(';')).join('\r\n'));
  }
  err('Rota não encontrada.',404);

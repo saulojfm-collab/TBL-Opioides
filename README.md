@@ -32,9 +32,9 @@ O professor pode encerrar antecipadamente ou acrescentar 30 segundos. O servidor
 
 ## Corrida e pontuação
 
-Cada aluno escolhe Mario, Luigi, Peach, Toad, Yoshi ou Bowser, em representações simples de pixel art. Personagens podem se repetir. O aluno toca na alternativa e toca novamente para confirmar. Não há bônus de velocidade. Erros geram tropeços e acertos, saltos, quando o resultado é divulgado; no tRAT o erro é sinalizado a cada tentativa. Ninguém é eliminado nem perde pontos anteriores.
+Cada aluno escolhe Mario, Luigi, Peach, Toad, Yoshi ou Bowser, em representações simples de pixel art. Personagens podem se repetir. O aluno toca na alternativa e toca novamente para confirmar. Há bônus por rapidez em acertos na primeira tentativa. Erros geram tropeços e acertos, saltos, quando o resultado é divulgado; no tRAT o erro é sinalizado a cada tentativa. Ninguém é eliminado nem perde pontos anteriores.
 
-Máximo individual: 3.200 = 1.000 de iRAT + 1.000 de tRAT + 1.200 de aplicação. Todos os integrantes recebem os mesmos pontos coletivos da sua equipe, sem substituir seus resultados individuais. O ranking de equipes conta apenas os 2.200 pontos coletivos para não favorecer equipes maiores. Empates compartilham a colocação, sem desempate por velocidade.
+Máximo individual com rapidez: 3.840 = 1.200 de iRAT + 1.200 de tRAT + 1.440 de aplicação. Todos os integrantes recebem os mesmos pontos coletivos da sua equipe, sem substituir seus resultados individuais. O ranking de equipes conta apenas os 2.640 pontos coletivos para não favorecer equipes maiores. Empates compartilham a colocação, sem outro desempate após a soma do bônus.
 
 No encerramento, o destaque **Aluno campeão da corrida** mostra o nome, o personagem, a equipe, os pontos individuais, os coletivos e o total. A maior soma individual + coletiva define o campeão. Em caso de empate na maior soma, todos recebem o título. O ranking detalhado e o CSV incluem posição e identificação de campeão.
 
@@ -80,3 +80,11 @@ Projeto didático independente. Mario Bros. e os nomes de personagens pertencem 
 Os 16 itens foram reescritos com situação-base autoral, comando afirmativo, cinco alternativas (A-E), resposta única e justificativas por alternativa. A orientação técnico-pedagógica é o Guia de elaboração e revisão de itens BNI-Enade, 3ª ed., Inep/MEC, 2026, especialmente seções 2.1 e 3.2-3.3. Trata-se de alinhamento editorial e pedagógico, sem certificação ou validação psicométrica pelo Inep. As habilidades registradas são objetivos locais da disciplina, sem correspondência formal declarada com uma matriz de prova do Enade.
 
 O fluxo de 26 rodadas, formação posterior de equipes e campeão pelo total é mantido. Com cinco opções, o tRAT aceita até cinco tentativas, valendo 100, 50, 25, 0 e 0 pontos. Todas as alternativas, incluindo E, integram gráficos, tentativas, comentários e CSV. Os contextos são hipotéticos, criados para os itens. A dificuldade não foi estimada empiricamente. O banco precisa ser aplicado à turma antes de se obterem indicadores de dificuldade e discriminação.
+
+## Bônus por rapidez (speed-v1)
+
+O servidor mede o intervalo entre a abertura da questão e o recebimento da resposta completa. A pontuação pela correção é preservada. O bônus exige acerto na primeira tentativa: primeiro terço do tempo inicial, +20% do valor máximo; segundo terço, +10%; último terço, +5%. iRAT/tRAT recebem +20/+10/+5; aplicação, +40/+20/+10. Ao ultrapassar o tempo inicial, uma eventual prorrogação permite pontuação base, mas bônus zero. Acrescentar tempo não reinicia a contagem da rapidez. Quem erra não recebe bônus; no tRAT, acertos em tentativas posteriores recebem apenas os pontos previstos para a tentativa.
+
+O horário e o bônus são definidos pelo servidor, sem aceitar pontos ou tempo informados pelo celular. Reenvios de respostas não acumulam bônus. Cada resposta preserva os horários das tentativas e o bônus concedido, inclusive após reinício do processo. O tempo inclui entrega ao servidor, portanto a conexão pode influenciar a classificação de rapidez. O teto de 20% mantém o maior peso na correção.
+
+Na etapa coletiva, os pontos de correção e de rapidez da equipe são atribuídos igualmente aos integrantes. A classificação final e o CSV discriminam pontos por acertos, bônus de rapidez e total. Os alunos continuam vendo apenas pontos já revelados; o professor acompanha o total ao vivo. Crie uma sala nova para usar estas regras. Salas legadas sem speed-v1 não recebem bônus retroativo.
