@@ -1,4 +1,4 @@
-export const bankVersion="2026-10-26-INEP";
+export const bankVersion="2026-10-26-ENFERMAGEM-v2";
 export const sources={
   "clark": "CLARK, M. A. et al. Farmacologia ilustrada. 5. ed. Porto Alegre: Artmed, 2013. cap. 14.",
   "goodman": "BRUNTON, L. L.; CHABNER, B. A.; KNOLLMANN, B. C. (org.). As bases farmacológicas da terapêutica de Goodman & Gilman. 12. ed. Porto Alegre: AMGH, 2012.",
@@ -9,37 +9,38 @@ export const sources={
   "fda": "U.S. FOOD AND DRUG ADMINISTRATION. New safety measures announced for opioid analgesics, prescription opioid cough products, and benzodiazepines. 2016. https://www.fda.gov/drugs/food-and-drug-administration-overdose-prevention-framework/new-safety-measures-announced-opioid-analgesics-prescription-opioid-cough-products-and",
   "naloxone": "DAILYMED. Naloxone hydrochloride injection, solution: prescribing information. Seções Clinical pharmacology e Warnings. https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=e65e03c1-9a66-b30b-e053-2995a90aeb73",
   "morphine": "DAILYMED. Morphine sulfate tablets: prescribing information. Seções Clinical pharmacology e Renal impairment. https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=58476a6b-b54b-5491-e063-6394a90a38c6&type=display",
-  "acmt": "STOLBACH, A. et al. ACMT Position Statement: Interpretation of urine opiate and opioid tests. Journal of Medical Toxicology, 2022. https://pmc.ncbi.nlm.nih.gov/articles/PMC8938527/"
+  "acmt": "STOLBACH, A. et al. ACMT Position Statement: Interpretation of urine opiate and opioid tests. Journal of Medical Toxicology, 2022. https://pmc.ncbi.nlm.nih.gov/articles/PMC8938527/",
+  "nursing": "JUNGQUIST, C. R. et al. American Society for Pain Management Nursing Guidelines on Monitoring for Opioid-Induced Advancing Sedation and Respiratory Depression: Revisions. Pain Management Nursing, 2020. https://pubmed.ncbi.nlm.nih.gov/31377031/"
 };
 export const readiness=[
   {
     "id": "r1",
-    "topic": "Sinalização de receptores",
-    "objective": "Inferir a sinalização de um receptor opioide a partir de resultados experimentais.",
+    "topic": "Mecanismo de ação da morfina",
+    "objective": "Relacionar a ativação do receptor μ pela morfina à sinalização intracelular.",
     "cognitive": "Analisar",
-    "context": "Em um ensaio com células que expressam receptores μ, um composto reduziu a concentração intracelular de AMPc previamente elevada por forskolina. A presença de naloxona impediu essa redução. A viabilidade celular foi mantida nas condições avaliadas.",
-    "command": "Qual mecanismo de sinalização explica o efeito do composto nesse ensaio?",
-    "stem": "Em um ensaio com células que expressam receptores μ, um composto reduziu a concentração intracelular de AMPc previamente elevada por forskolina. A presença de naloxona impediu essa redução. A viabilidade celular foi mantida nas condições avaliadas.\n\nQual mecanismo de sinalização explica o efeito do composto nesse ensaio?",
+    "context": "Durante a discussão de um paciente com dor intensa que recebeu morfina, os estudantes de enfermagem revisam como esse fármaco ativa receptores μ em neurônios envolvidos na transmissão da dor. A análise deve relacionar a ação da morfina à atividade da adenilato ciclase e à concentração intracelular de AMPc.",
+    "command": "Qual sequência de sinalização é compatível com a ativação desses receptores pela morfina?",
+    "stem": "Durante a discussão de um paciente com dor intensa que recebeu morfina, os estudantes de enfermagem revisam como esse fármaco ativa receptores μ em neurônios envolvidos na transmissão da dor. A análise deve relacionar a ação da morfina à atividade da adenilato ciclase e à concentração intracelular de AMPc.\n\nQual sequência de sinalização é compatível com a ativação desses receptores pela morfina?",
     "options": [
-      "Acoplamento a Gs, com estímulo da adenililciclase.",
-      "Acoplamento a Gq, com estímulo da fosfolipase C.",
-      "Acoplamento a Gi/o, com inibição da adenililciclase.",
-      "Ativação de guanililciclase, com aumento de GMPc.",
-      "Ativação de tirosina quinase, com fosforilação do receptor."
+      "Ativação de Gs, estímulo da adenilato ciclase e aumento de AMPc.",
+      "Ativação de Gq, estímulo da fosfolipase C e aumento de IP3.",
+      "Ativação de Gi/o, inibição da adenilato ciclase e redução de AMPc.",
+      "Ativação de guanilato ciclase, produção de GMPc e aumento de AMPc.",
+      "Ativação de tirosina quinase, fosforilação direta do receptor e aumento de AMPc."
     ],
     "answer": 2,
     "rationales": [
-      "ERRADA. A ativação de Gs favoreceria aumento de AMPc, em sentido oposto ao resultado observado.",
-      "ERRADA. A via Gq/fosfolipase C está associada a IP3 e diacilglicerol, e não é o acoplamento característico dos receptores μ.",
-      "CERTA. Receptores μ acoplam-se a Gi/o. A inibição da adenililciclase reduz AMPc; o bloqueio por naloxona apoia a participação do receptor opioide nesse efeito.",
-      "ERRADA. GMPc e guanililciclase pertencem a outra via de sinalização e não explicam a resposta reversível por antagonismo μ.",
-      "ERRADA. Receptores opioides clássicos são acoplados à proteína G, em vez de apresentarem o mecanismo típico de receptores tirosina quinase."
+      "ERRADA. Gs estimula a adenilato ciclase e aumenta AMPc; esse não é o acoplamento característico do receptor μ ativado pela morfina.",
+      "ERRADA. A via Gq/fosfolipase C não corresponde ao acoplamento Gi/o característico dos receptores opioides clássicos.",
+      "CERTA. A morfina é agonista dos receptores μ, acoplados a Gi/o. Sua ativação inibe a adenilato ciclase e reduz AMPc. A naloxona, por sua vez, atua como antagonista: bloqueia os efeitos dos agonistas, sem produzir essa resposta agonista.",
+      "ERRADA. A guanilato ciclase produz GMPc; essa via não explica a inibição da adenilato ciclase pela ativação do receptor μ.",
+      "ERRADA. O receptor μ é acoplado à proteína G e não apresenta o mecanismo típico de um receptor tirosina quinase."
     ],
-    "explanation": "Receptores μ acoplam-se a Gi/o. A inibição da adenililciclase reduz AMPc; o bloqueio por naloxona apoia a participação do receptor opioide nesse efeito.",
+    "explanation": "A morfina é agonista dos receptores μ, acoplados a Gi/o. Sua ativação inibe a adenilato ciclase e reduz AMPc. A naloxona, por sua vez, atua como antagonista: bloqueia os efeitos dos agonistas, sem produzir essa resposta agonista.",
     "source": "artigo",
-    "locator": "Mecanismo de ação; Clark, p. 170.",
+    "locator": "Mecanismo de ação; Clark, p. 170. Distinção entre agonismo e antagonismo: bula de naloxona, Clinical pharmacology.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "r2",
@@ -68,7 +69,7 @@ export const readiness=[
     "source": "clark",
     "locator": "p. 170, figura 14.2.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "r3",
@@ -97,7 +98,7 @@ export const readiness=[
     "source": "clark",
     "locator": "p. 170-173.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "r4",
@@ -126,7 +127,7 @@ export const readiness=[
     "source": "clark",
     "locator": "p. 173, tolerância e dependência física.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "r5",
@@ -155,7 +156,7 @@ export const readiness=[
     "source": "morphine",
     "locator": "Clinical pharmacology; Renal impairment.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "r6",
@@ -184,7 +185,7 @@ export const readiness=[
     "source": "cpic",
     "locator": "Seções sobre CYP2D6 e codeína.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "r7",
@@ -213,7 +214,7 @@ export const readiness=[
     "source": "clark",
     "locator": "p. 173-174, meperidina.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "r8",
@@ -242,7 +243,7 @@ export const readiness=[
     "source": "clark",
     "locator": "p. 172 e seção fentanila.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "r9",
@@ -271,7 +272,7 @@ export const readiness=[
     "source": "artigo",
     "locator": "Seção tramadol.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "r10",
@@ -300,38 +301,38 @@ export const readiness=[
     "source": "naloxone",
     "locator": "Clinical pharmacology; fundamentos de antagonismo competitivo.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   }
 ];
 export const application=[
   {
     "id": "a1",
-    "topic": "Aplicação: comunicação em toxicologia",
-    "objective": "Integrar achados clínicos e limites de triagem na comunicação de risco.",
+    "topic": "Aplicação: vigilância respiratória",
+    "objective": "Priorizar a resposta de enfermagem diante de sinais de depressão respiratória após opioide.",
     "cognitive": "Analisar",
-    "context": "Um laboratório recebeu amostra de urina de paciente sonolento, com 7 incursões respiratórias por minuto e pupilas puntiformes. A equipe informou exposição possível a analgésico opioide. A triagem imunológica para opiáceos foi negativa; o fabricante informa baixa reatividade do ensaio para fentanila. A confirmação por método específico ainda está em andamento.",
-    "command": "Qual comunicação do biomédico à equipe assistencial integra os achados e o desempenho do ensaio?",
-    "stem": "Um laboratório recebeu amostra de urina de paciente sonolento, com 7 incursões respiratórias por minuto e pupilas puntiformes. A equipe informou exposição possível a analgésico opioide. A triagem imunológica para opiáceos foi negativa; o fabricante informa baixa reatividade do ensaio para fentanila. A confirmação por método específico ainda está em andamento.\n\nQual comunicação do biomédico à equipe assistencial integra os achados e o desempenho do ensaio?",
+    "context": "Na enfermaria, um paciente recebeu morfina para dor intensa, conforme prescrição. Na reavaliação, a enfermeira observa dificuldade para despertá-lo, respiração superficial e frequência respiratória de 7 incursões por minuto. Antes da administração, ele estava alerta e respirava 16 vezes por minuto.",
+    "command": "Qual conduta de enfermagem deve ser priorizada diante dessa mudança clínica?",
+    "stem": "Na enfermaria, um paciente recebeu morfina para dor intensa, conforme prescrição. Na reavaliação, a enfermeira observa dificuldade para despertá-lo, respiração superficial e frequência respiratória de 7 incursões por minuto. Antes da administração, ele estava alerta e respirava 16 vezes por minuto.\n\nQual conduta de enfermagem deve ser priorizada diante dessa mudança clínica?",
     "options": [
-      "A triagem negativa reduz a suspeita de fentanila; a avaliação de urgência deve priorizar outras causas.",
-      "A miose define exposição a fentanila; o método confirmatório deve ser usado para estimar sua dose.",
-      "A confirmação analítica determina a urgência; a avaliação respiratória deve ser vinculada ao laudo final.",
-      "A baixa frequência respiratória indica efeito sedativo esperado; o resultado negativo favorece a observação.",
-      "A triagem tem limitação para fentanila; o risco ventilatório deve ser comunicado antes da confirmação."
+      "Reavaliar no horário habitual dos sinais vitais, interpretando a sonolência como sinal de analgesia adequada.",
+      "Aguardar a próxima queixa de dor para avaliar a respiração, pois o paciente está em repouso.",
+      "Priorizar medidas para náusea e reavaliar a ventilação após verificar a resposta ao cuidado.",
+      "Estimular a deambulação assistida para reduzir a sonolência e avaliar a tolerância ao esforço.",
+      "Acionar ajuda imediata, avaliar vias aéreas e ventilação e iniciar suporte conforme protocolo institucional."
     ],
     "answer": 4,
     "rationales": [
-      "ERRADA. Um resultado negativo em ensaio com baixa reatividade para fentanila tem limitação para afastar essa exposição; o quadro respiratório mantém relevância imediata.",
-      "ERRADA. Miose não identifica uma substância específica e a concentração analítica não equivale, de forma direta, à dose usada.",
-      "ERRADA. A urgência decorre também do quadro clínico. Condicioná-la ao término da confirmação pode atrasar a comunicação de um risco já reconhecido.",
-      "ERRADA. A frequência respiratória descrita sinaliza risco, não um efeito que possa ser considerado benigno com base em triagem de alcance limitado.",
-      "CERTA. A comunicação deve explicitar a limitação analítica e a gravidade ventilatória, sem confundir triagem negativa com exclusão da exposição nem aguardar confirmação para alertar a equipe."
+      "ERRADA. Dificuldade para despertar e respiração superficial com 7 incursões por minuto indicam deterioração; a reavaliação não deve esperar o horário habitual.",
+      "ERRADA. A avaliação respiratória não depende de nova queixa de dor. Sedação acentuada pode impedir o paciente de comunicar sintomas.",
+      "ERRADA. O caso apresenta comprometimento ventilatório, que tem prioridade sobre o controle de náusea.",
+      "ERRADA. Um paciente com rebaixamento de consciência e hipoventilação não deve ser colocado para deambular; isso não corrige o risco respiratório.",
+      "CERTA. A associação de sedação acentuada e hipoventilação após morfina exige resposta imediata. A enfermagem deve acionar a equipe, avaliar e apoiar a ventilação conforme protocolo, preparar a naloxona quando indicada por prescrição ou protocolo e manter vigilância após a reversão."
     ],
-    "explanation": "A comunicação deve explicitar a limitação analítica e a gravidade ventilatória, sem confundir triagem negativa com exclusão da exposição nem aguardar confirmação para alertar a equipe.",
-    "source": "acmt",
-    "locator": "Limitações dos imunoensaios e comunicação clínica; situação hipotética autoral.",
+    "explanation": "A associação de sedação acentuada e hipoventilação após morfina exige resposta imediata. A enfermagem deve acionar a equipe, avaliar e apoiar a ventilação conforme protocolo, preparar a naloxona quando indicada por prescrição ou protocolo e manter vigilância após a reversão.",
+    "source": "nursing",
+    "locator": "Reconhecimento de sedação progressiva, monitorização e intervenção; naloxona: bula, Warnings e Overdosage.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "a2",
@@ -360,36 +361,36 @@ export const application=[
     "source": "fda",
     "locator": "Associação de opioides com benzodiazepínicos.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "a3",
-    "topic": "Aplicação: integração farmacocinética",
-    "objective": "Selecionar evidências laboratoriais pertinentes à hipótese de acúmulo de M6G.",
+    "topic": "Aplicação: constipação por opioides",
+    "objective": "Relacionar a redução da motilidade intestinal pela morfina ao planejamento do cuidado de enfermagem.",
     "cognitive": "Analisar",
-    "context": "Uma equipe avalia sonolência crescente em paciente que recebe morfina em esquema estável. A função hepática não apresentou mudança relevante, mas a função renal piorou nas últimas avaliações. O objetivo da análise é investigar a contribuição de acúmulo de morfina-6-glicuronídeo para o evento.",
-    "command": "Qual conjunto de informações é mais pertinente à investigação dessa hipótese?",
-    "stem": "Uma equipe avalia sonolência crescente em paciente que recebe morfina em esquema estável. A função hepática não apresentou mudança relevante, mas a função renal piorou nas últimas avaliações. O objetivo da análise é investigar a contribuição de acúmulo de morfina-6-glicuronídeo para o evento.\n\nQual conjunto de informações é mais pertinente à investigação dessa hipótese?",
+    "context": "Uma paciente em uso regular de morfina relata fezes endurecidas, esforço para evacuar e redução da frequência das evacuações desde o início do tratamento. Não apresenta vômitos, distensão importante nem dor abdominal intensa. Na avaliação de enfermagem, a ingestão de líquidos e a mobilidade também estão reduzidas.",
+    "command": "Qual interpretação orienta o cuidado de enfermagem mais adequado a essa situação?",
+    "stem": "Uma paciente em uso regular de morfina relata fezes endurecidas, esforço para evacuar e redução da frequência das evacuações desde o início do tratamento. Não apresenta vômitos, distensão importante nem dor abdominal intensa. Na avaliação de enfermagem, a ingestão de líquidos e a mobilidade também estão reduzidas.\n\nQual interpretação orienta o cuidado de enfermagem mais adequado a essa situação?",
     "options": [
-      "Tendência da função renal, cronologia de administração e concentração de M6G por método específico.",
-      "Atividade do CYP2D6, cronologia de administração e concentração de morfina por triagem imunológica.",
-      "Atividade de transaminases, cronologia da coleta e concentração de codeína por método específico.",
-      "Concentração de albumina, frequência de evacuações e presença de miose nas avaliações clínicas.",
-      "Intensidade inicial da dor, frequência de evacuações e concentração urinária de creatinina isolada."
+      "A morfina reduz a motilidade intestinal; cabe avaliar o padrão de evacuação e implementar medidas de cuidado conforme as condições clínicas e o plano terapêutico.",
+      "A morfina acelera o trânsito intestinal; cabe investigar a retenção de fezes como manifestação de aumento do peristaltismo.",
+      "O quadro indica dependência física; cabe orientar a suspensão abrupta da morfina para recuperar a função intestinal.",
+      "O quadro decorre da ação antagonista da morfina; cabe aguardar a perda do efeito analgésico antes de intervir.",
+      "O efeito intestinal desaparece com a tolerância à analgesia; cabe manter o cuidado atual até a normalização espontânea."
     ],
     "answer": 0,
     "rationales": [
-      "CERTA. A tendência renal, a exposição temporal e a mensuração específica do metabólito permitem avaliar conjuntamente a hipótese, sem presumir causalidade a partir de um exame isolado.",
-      "ERRADA. CYP2D6 é relevante para a bioativação da codeína, mas não é o foco da formação de M6G; uma triagem de morfina não quantifica necessariamente o metabólito alvo.",
-      "ERRADA. O painel proposto se afasta da hipótese de acúmulo renal de M6G e inclui codeína, que não é a exposição descrita.",
-      "ERRADA. Esses dados podem compor a avaliação geral, mas não investigam diretamente a exposição a M6G e sua relação com a função renal.",
-      "ERRADA. A dor e o trânsito intestinal não substituem a avaliação de exposição ao metabólito; creatinina urinária isolada não caracteriza a tendência de filtração renal."
+      "CERTA. A morfina diminui a motilidade propulsiva intestinal e favorece constipação. O cuidado inclui avaliar evacuações e sintomas abdominais, orientar hidratação e mobilidade quando permitidas e executar o plano prescrito, inclusive medidas farmacológicas quando indicadas. A persistência ou piora deve ser comunicada à equipe.",
+      "ERRADA. A morfina reduz a motilidade propulsiva; aceleração do trânsito não explica o padrão descrito.",
+      "ERRADA. Constipação é efeito adverso e, isoladamente, não caracteriza dependência física. A suspensão abrupta não é uma orientação de enfermagem adequada para esse caso.",
+      "ERRADA. A morfina é agonista opioide; o efeito intestinal não decorre de antagonismo nem exige esperar o fim da analgesia para iniciar o cuidado.",
+      "ERRADA. A tolerância ao efeito constipante é limitada e não acompanha necessariamente a tolerância à analgesia. Aguardar resolução espontânea pode prolongar o problema."
     ],
-    "explanation": "A tendência renal, a exposição temporal e a mensuração específica do metabólito permitem avaliar conjuntamente a hipótese, sem presumir causalidade a partir de um exame isolado.",
-    "source": "morphine",
-    "locator": "Clinical pharmacology; Renal impairment.",
+    "explanation": "A morfina diminui a motilidade propulsiva intestinal e favorece constipação. O cuidado inclui avaliar evacuações e sintomas abdominais, orientar hidratação e mobilidade quando permitidas e executar o plano prescrito, inclusive medidas farmacológicas quando indicadas. A persistência ou piora deve ser comunicada à equipe.",
+    "source": "clark",
+    "locator": "cap. 14, efeitos gastrintestinais da morfina; aula Analgésicos Opioides 2023, Trato gastrintestinal.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "a4",
@@ -418,7 +419,7 @@ export const application=[
     "source": "naloxone",
     "locator": "Warnings; duração relativa do agonista e do antagonista.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "a5",
@@ -447,7 +448,7 @@ export const application=[
     "source": "goodman",
     "locator": "p. 520, tolerância e dependência física.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   },
   {
     "id": "a6",
@@ -476,13 +477,13 @@ export const application=[
     "source": "clark",
     "locator": "p. 170-175; fundamentos de curvas concentração-resposta.",
     "contextCredit": "Situação hipotética elaborada para este item.",
-    "bankVersion": "2026-10-26-INEP"
+    "bankVersion": "2026-10-26-ENFERMAGEM-v2"
   }
 ];
 export const deck=[
   {
     "title": "Corrida dos receptores",
-    "text": "Analgésicos opioides · Biomedicina",
+    "text": "Analgésicos opioides · Enfermagem",
     "detail": "Uma missão de Team Based Learning: decida sozinho, argumente com sua equipe e aplique a farmacologia."
   },
   {
