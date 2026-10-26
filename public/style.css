@@ -5,3 +5,5 @@
 .option:disabled{opacity:1;cursor:default}.option:disabled:hover{transform:none}
 
 .champion{border:2px solid #d9ae1f;background:#fffcf0}.champion-grid{display:flex;gap:20px;flex-wrap:wrap}.champion-person{flex:1;min-width:180px;padding:20px;text-align:center;background:#fff4bd;border-radius:12px}.champion-person .sprite{margin:12px auto 24px;transform:scale(1.5)}.champion-person strong{font-size:26px}.champion-person p{margin:8px 0}
+
+.question-context{font-size:clamp(17px,1.7vw,23px);line-height:1.55;max-width:1000px;margin-top:12px;white-space:pre-line}.context-credit{font-size:11px!important;color:#aab9c8!important;margin:8px 0 20px!important}.stage .question{margin-top:14px}.student .question-context{font-size:17px}.student .question{font-size:21px}body.projector .question-context{font-size:24px}

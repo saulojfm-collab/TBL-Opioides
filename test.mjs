@@ -13,7 +13,7 @@ test('TBL completo, isolamento de acesso, pontuação e retomada',async()=>{
  async function stop(){if(child&&child.exitCode===null){child.kill();await once(child,'exit');}}
  async function req(path,b,token,status=200){const r=await fetch(origin+path,{method:b?'POST':'GET',headers:{...(b?{'Content-Type':'application/json'}:{}),...(token?{Authorization:'Bearer '+token}:{})},body:b?JSON.stringify(b):undefined});assert.equal(r.status,status,await r.clone().text());return r.headers.get('content-type').includes('json')?r.json():r.text();}
  try{
- await launch();assert.deepEqual(await req('/health'),{ok:true});
+ await launch();assert.equal((await req('/health')).ok,true);
  await req('/api/create',{password:'wrong'},null,403);
  const host=await req('/api/create',{password:'test-password',teams:2,duration:20});const base='/api/room/'+host.code;const ctl=(action,extra={})=>req(base+'/control',{action,...extra},host.token);
  const lobby=await req(base+'/state',null,host.token);assert.equal(lobby.status,'lobby');assert.equal(lobby.current,null);assert.equal(lobby.players.length,0);
@@ -25,15 +25,15 @@ test('TBL completo, isolamento de acesso, pontuação e retomada',async()=>{
  await req(base+'/state',null,null,401);await req(base+'/control',{action:'start'},a.token,403);await req(base+'/export',null,a.token,403);await req('/questions.mjs',null,null,404);await req('/data/rooms.json',null,null,404);
  await ctl('start');await req(base+'/join',{name:'Late',team:'Equipe 1'},null,400);
  for(let i=0;i<26;i++){
- const rd=roundAt(i);let before=await req(base+'/state',null,a.token);assert.equal(before.index,i);assert.equal(before.current.answer,undefined);assert.equal(before.current.explanation,undefined);assert.equal(before.submissions,undefined);assert(!JSON.stringify(before).includes(host.token));
+ const rd=roundAt(i);let before=await req(base+'/state',null,a.token);assert.equal(before.index,i);assert.equal(before.current.answer,undefined);assert.equal(before.current.explanation,undefined);assert.equal(before.current.rationales,undefined);assert.equal(before.current.options.length,5);assert(before.current.context);assert(before.current.command);assert.equal(before.submissions,undefined);assert(!JSON.stringify(before).includes(host.token));
  if(i<10){for(const p of [a,b,c])await req(base+'/answer',{index:i,choice:rd.q.answer},p.token);await req(base+'/answer',{index:i,choice:rd.q.answer},a.token,400);}
  else{
  await req(base+'/answer',{index:i,choice:rd.q.answer},b.token,403);
- if(i===10){const wrong=(rd.q.answer+1)%4;await req(base+'/answer',{index:i,choice:wrong},a.token);await req(base+'/answer',{index:i,choice:wrong},a.token,400);}
+ if(i===10){const wrong=(rd.q.answer+1)%5;await req(base+'/answer',{index:i,choice:wrong},a.token);await req(base+'/answer',{index:i,choice:wrong},a.token,400);}
  await req(base+'/answer',{index:i,choice:rd.q.answer,reason:'Mecanismo discutido'},a.token);await req(base+'/answer',{index:i,choice:rd.q.answer},c.token);
  }
  await req(base+'/answer',{index:i-1,choice:0},a.token,400);
- const teacher=await req(base+'/state',null,host.token);assert.equal(teacher.received,i<10?3:2);assert.equal(teacher.current.answer,rd.q.answer);
+ await req(base+'/answer',{index:i,choice:5},a.token,400);const teacher=await req(base+'/state',null,host.token);assert.equal(teacher.received,i<10?3:2);assert.equal(teacher.current.answer,rd.q.answer);
  if(i===2){await stop();await launch();const restored=await req(base+'/state',null,a.token);assert.equal(restored.index,2);assert.equal(restored.mine.done,true);}
  await ctl('lock');await req(base+'/answer',{index:i,choice:0},a.token,400);
  if(i===0){await req(base+'/control',{action:'reveal'},host.token,400);assert.equal((await req(base+'/state',null,a.token)).players[0].score,0);await ctl('extend');await ctl('lock');}
@@ -62,12 +62,16 @@ test('TBL completo, isolamento de acesso, pontuação e retomada',async()=>{
  assert.equal(final.ranking[0].name,'Caio');assert.equal(final.ranking[0].team,'Equipe 2');assert.equal(final.ranking[0].individualScore,1000);assert.equal(final.ranking[0].collectiveScore,2200);assert.equal(final.ranking[0].champion,true);assert.equal(final.ranking[1].rank,2);assert.equal(final.ranking[2].rank,2);assert.equal(final.ranking.filter(p=>p.champion).length,1);
  const studentFinal=await req(base+'/state',null,a.token);assert.deepEqual(studentFinal.ranking,final.ranking);assert(csv.includes('"posicao_total";"campeao"'));assert(csv.includes('"Caio";"Luigi";"Equipe 2";"1000";"2200";"3200";"1";"Sim"'));
  // Retoma uma sala encerrada com um empate na liderança para conferir título compartilhado.
- await stop();const fixtureFile=join(dir,'rooms.json');const fixture=JSON.parse(readFileSync(fixtureFile,'utf8'));fixture[host.code].answers[0][c.id].choices=[(readiness[0].answer+1)%4];writeFileSync(fixtureFile,JSON.stringify(fixture));await launch();
+ await stop();const fixtureFile=join(dir,'rooms.json');const fixture=JSON.parse(readFileSync(fixtureFile,'utf8'));fixture[host.code].answers[0][c.id].choices=[(readiness[0].answer+1)%5];writeFileSync(fixtureFile,JSON.stringify(fixture));await launch();
  const tied=await req(base+'/state',null,host.token);assert.deepEqual(tied.ranking.filter(p=>p.champion).map(p=>p.name),['Alice','Bia']);assert.equal(tied.ranking[0].score,3150);assert.equal(tied.ranking[2].rank,3);assert.equal(tied.ranking[2].name,'Caio');
+ const five=await req('/api/create',{password:'test-password',duration:20});const fivePath='/api/room/'+five.code;const fiveCtl=(action,extra={})=>req(fivePath+'/control',{action,...extra},five.token);const fiveStudent=await req(fivePath+'/join',{name:'Cinco alternativas',character:'Mario'});
+ await fiveCtl('start');for(let i=0;i<10;i++){await fiveCtl('lock');await fiveCtl('next');}await fiveCtl('set-teams',{count:2});await fiveCtl('assign-team',{id:fiveStudent.id,team:'Equipe 1'});await fiveCtl('start-team');
+ const wrongChoices=[0,1,2,3,4].filter(choice=>choice!==readiness[0].answer);for(let i=0;i<4;i++){const attempt=await req(fivePath+'/answer',{index:10,choice:wrongChoices[i]},fiveStudent.token);assert.equal(attempt.state.mine.done,false);}
+ const fifth=await req(fivePath+'/answer',{index:10,choice:readiness[0].answer},fiveStudent.token);assert.equal(fifth.state.mine.done,true);assert.equal(fifth.state.mine.correct,true);await fiveCtl('lock');const fifthResult=await fiveCtl('reveal');assert.equal(fifthResult.submissions[0].points,0);assert.equal(fifthResult.distribution.length,5);const fiveCsv=await req(fivePath+'/export',null,five.token);assert(fiveCsv.includes('E'));await fiveCtl('delete');
  await ctl('delete');await req(base+'/state',null,a.token,404);
  }finally{await stop();rmSync(dir,{recursive:true,force:true});}
 });
-test('Banco de questões íntegro e mesmas questões no iRAT/tRAT',()=>{assert.equal(readiness.length,10);assert.equal(application.length,6);for(let i=0;i<10;i++)assert.equal(roundAt(i).q,roundAt(i+10).q);for(const q of [...readiness,...application]){assert.equal(q.options.length,4);assert(q.answer>=0&&q.answer<4);assert(q.explanation.length>50);assert(q.source);}});
+test('Banco de questões íntegro e mesmas questões no iRAT/tRAT',()=>{assert.equal(readiness.length,10);assert.equal(application.length,6);for(let i=0;i<10;i++)assert.equal(roundAt(i).q,roundAt(i+10).q);for(const q of [...readiness,...application]){assert.equal(q.options.length,5);assert(q.answer>=0&&q.answer<5);assert(q.explanation.length>50);assert(q.source);assert(q.context.length>100);assert(q.command.length>20);assert.equal(q.rationales.length,5);assert.equal(q.rationales.filter(r=>r.startsWith('CERTA.')).length,1);assert(q.rationales[q.answer].startsWith('CERTA.'));assert(q.objective);}});
 test('Telas distinguem entrada individual, formação das equipes e campeão pelo nome',()=>{
  const elements=new Map();const el=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',addEventListener(){},classList:{contains(){return false},toggle(){},add(){}}});return elements.get(id);};
  const context={document:{querySelector:el,querySelectorAll:()=>[],addEventListener(){},body:{classList:{contains(){return false}}}},location:{search:'',origin:'http://test'},localStorage:{getItem(){return null}},URLSearchParams,setInterval(){},setTimeout(){},window:{scrollTo(){}},scrollY:0,Date};
@@ -76,4 +80,5 @@ test('Telas distinguem entrada individual, formação das equipes e campeão pel
  const players=[{id:'a',name:'Ana Silva',character:'Mario',team:'Equipe 1',score:3200,individualScore:1000,champion:true,rank:1},{id:'b',name:'Bruno Souza',character:'Luigi',team:'Equipe 2',score:3100,individualScore:900,champion:false,rank:2}];
  context.fixture={status:'finished',players,ranking:players};vm.runInContext('state=fixture;result=individualPodium()',context);assert(context.result.includes('Aluno campeão da corrida'));assert(context.result.includes('Ana Silva'));assert(context.result.includes('Equipe 1'));assert(context.result.includes('1000 individuais + 2200 coletivos'));
  context.fixture.ranking[1]={...players[1],score:3200,champion:true,rank:1};vm.runInContext('result=individualPodium()',context);assert(context.result.includes('Campeões da corrida'));assert(context.result.includes('Bruno Souza'));
+ context.fixture={status:'open',current:{...readiness[2],phase:'individual',number:3,total:10},me:{captain:false},duration:180};vm.runInContext('state=fixture;result=question(false)',context);assert(context.result.includes('data-choice="4"'));assert(context.result.includes('<b>E</b>'));assert(context.result.includes(readiness[2].command));assert(!context.result.includes('Comentários de cada alternativa'));
 });

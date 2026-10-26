@@ -23,7 +23,7 @@ Referências de hospedagem: [Web Services](https://render.com/docs/web-services)
 - Apresentação: use os seis quadros de briefing. Todos entram antes da largada. A entrada de novos participantes fica encerrada quando o iRAT começa; participantes já inscritos podem reconectar.
 - iRAT: 10 questões, uma resposta individual por aluno, 100 pontos por acerto. Após encerrar, avance. Não há revelação de gabarito nesta etapa.
 - Formação das equipes: ao encerrar a décima questão individual, clique em **Formar equipes**. Escolha de 2 a 12 equipes e use **Sortear equipes equilibradas**, ou **Criar equipes vazias** e atribua cada aluno na tabela. O primeiro integrante vira capitão por padrão e pode ser substituído. Todos os alunos precisam de equipe antes de clicar em **Iniciar tRAT**. Eles continuam no mesmo celular e na mesma sala, sem novo cadastro. As respostas individuais permanecem vinculadas ao identificador original e ao nome do aluno.
-- tRAT: as mesmas 10 questões, discutidas em equipe. O capitão envia o consenso. Vale 100/50/25/0 conforme a tentativa de acerto. O professor pode designar outro capitão na lista de participantes.
+- tRAT: as mesmas 10 questões, discutidas em equipe. O capitão envia o consenso. Vale 100/50/25/0/0 conforme a tentativa de acerto. O professor pode designar outro capitão na lista de participantes.
 - Aplicação: seis problemas comuns a todas as equipes. O capitão pode registrar um argumento antes de confirmar a alternativa. Uma resposta por equipe, valendo 200 pontos. Encerre, peça defesa oral e revele simultaneamente.
 - Apelação: antes de avançar, conduza discussão com justificativa e consulta às fontes. O aplicativo não altera notas por apelação nem oferece edição manual de pontuação.
 - Fechamento: discuta os mecanismos que geraram mais erros e exporte o CSV.
@@ -74,3 +74,9 @@ Abra `http://localhost:3000`. Para verificar servidor e banco de questões: `npm
 Testes automatizados cobrem 26 rodadas com três alunos, inicialmente sem equipe, formação manual e por sorteio após o iRAT, restrições de acesso, preservação das notas individuais, bloqueio de mudança de equipe após início do tRAT, ocultação do gabarito, tentativas repetidas, pontuação, campeão por nome e equipe, exportação e retomada após reinício. Não constituem teste de carga nem validação em uma turma real. A prévia visual no navegador integrado não conseguiu se conectar ao servidor local deste ambiente; confira a interface em computador e celular após a publicação e faça uma sala de ensaio antes da aula.
 
 Projeto didático independente. Mario Bros. e os nomes de personagens pertencem à Nintendo. O aplicativo não usa imagens ou trilhas oficiais. O prêmio é simbólico.
+
+## Revisão dos itens em 26/10/2026
+
+Os 16 itens foram reescritos com situação-base autoral, comando afirmativo, cinco alternativas (A-E), resposta única e justificativas por alternativa. A orientação técnico-pedagógica é o Guia de elaboração e revisão de itens BNI-Enade, 3ª ed., Inep/MEC, 2026, especialmente seções 2.1 e 3.2-3.3. Trata-se de alinhamento editorial e pedagógico, sem certificação ou validação psicométrica pelo Inep. As habilidades registradas são objetivos locais da disciplina, sem correspondência formal declarada com uma matriz de prova do Enade.
+
+O fluxo de 26 rodadas, formação posterior de equipes e campeão pelo total é mantido. Com cinco opções, o tRAT aceita até cinco tentativas, valendo 100, 50, 25, 0 e 0 pontos. Todas as alternativas, incluindo E, integram gráficos, tentativas, comentários e CSV. Os contextos são hipotéticos, criados para os itens. A dificuldade não foi estimada empiricamente. O banco precisa ser aplicado à turma antes de se obterem indicadores de dificuldade e discriminação.
